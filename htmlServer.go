@@ -1,16 +1,33 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+
+	"github.com/Gambor27/RSSFeed/internal/database"
 )
 
+type apiConfig struct {
+	DB *database.Queries
+}
+
 func serverSetup(port string) error {
+	dbURL := os.Getenv(("CONNECTION_STRING"))
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var dbQueries = apiConfig{}
+	dbQueries.DB = database.New(db)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /v1/readiness", health)
 	mux.HandleFunc("GET /v1/err", giveError)
+	mux.HandleFunc("POST /v1/users", dbQueries.createUser)
 
 	corsMux := middlewareCors(mux)
 	address := fmt.Sprintf("localhost:%s", port)
@@ -18,7 +35,7 @@ func serverSetup(port string) error {
 		Addr:    address,
 		Handler: corsMux,
 	}
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
 		return errors.New("server failed to start")
 	}
