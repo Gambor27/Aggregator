@@ -29,6 +29,8 @@ func serverSetup(port string) error {
 	mux.HandleFunc("GET /v1/err", giveError)
 	mux.HandleFunc("POST /v1/users", cfg.createUser)
 	mux.HandleFunc("GET /v1/users", cfg.getUserByKey)
+	mux.HandleFunc("POST /v1/feeds", cfg.createFeed)
+	mux.HandleFunc("GET /v1/feeds", cfg.getFeeds)
 
 	corsMux := middlewareCors(mux)
 	address := fmt.Sprintf("localhost:%s", port)

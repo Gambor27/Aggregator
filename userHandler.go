@@ -24,6 +24,7 @@ func (cfg apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 	uuid, err := uuid.NewUUID()
 	if err != nil {
 		jsonError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	newUser.ID = uuid
@@ -41,21 +42,9 @@ func (cfg apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cfg apiConfig) getUserByKey(w http.ResponseWriter, r *http.Request) {
-	var request struct {
-		Name string `json:"name"`
-	}
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&request)
+	user, err := cfg.getKey(r)
 	if err != nil {
 		jsonError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	authHeader := r.Header.Get("Authorization")
-	key := authHeader[7:]
-	user, err := cfg.DB.GetUserByKey(r.Context(), key)
-	if err != nil {
-		jsonError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 	respondWithJSON(w, http.StatusOK, user)
