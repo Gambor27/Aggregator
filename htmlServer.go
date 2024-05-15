@@ -20,14 +20,15 @@ func serverSetup(port string) error {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	var dbQueries = apiConfig{}
-	dbQueries.DB = database.New(db)
+	var cfg = apiConfig{}
+	cfg.DB = database.New(db)
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /v1/readiness", health)
 	mux.HandleFunc("GET /v1/err", giveError)
-	mux.HandleFunc("POST /v1/users", dbQueries.createUser)
+	mux.HandleFunc("POST /v1/users", cfg.createUser)
+	mux.HandleFunc("GET /v1/users", cfg.getUserByKey)
 
 	corsMux := middlewareCors(mux)
 	address := fmt.Sprintf("localhost:%s", port)
