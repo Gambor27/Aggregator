@@ -142,3 +142,28 @@ func (cfg apiConfig) getUserFollows(w http.ResponseWriter, r *http.Request) {
 	}
 	respondWithJSON(w, http.StatusAccepted, follows)
 }
+
+func (cfg apiConfig) getPostsforUser(w http.ResponseWriter, r *http.Request) {
+	user, err := cfg.getKey(r)
+	if err != nil {
+		jsonError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	var params = database.GetPostByUserParams{
+		UserID: user.ID,
+		Limit:  10,
+	}
+	posts, err := cfg.DB.GetPostByUser(r.Context(), params)
+	if err != nil {
+		jsonError(w, http.StatusNotFound, err.Error())
+		return
+	}
+	var output = make([]PostByUser, 0)
+
+	for _, post := range posts {
+		nextPost := databasePostsByUserToPostByUser(post)
+		output = append(output, nextPost)
+	}
+	respondWithJSON(w, http.StatusOK, output)
+}

@@ -38,6 +38,7 @@ func serverSetup(port string) error {
 	mux.HandleFunc("POST /v1/feed_follows", cfg.followFeed)
 	mux.HandleFunc("DELETE /v1/feed_follows/{followID}", cfg.deleteFeedFollow)
 	mux.HandleFunc("GET /v1/feed_follows", cfg.getUserFollows)
+	mux.HandleFunc("GET /v1/posts", cfg.getPostsforUser)
 
 	corsMux := middlewareCors(mux)
 	address := fmt.Sprintf("localhost:%s", port)

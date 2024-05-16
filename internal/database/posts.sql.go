@@ -58,7 +58,7 @@ const getPostByUser = `-- name: GetPostByUser :many
 SELECT posts.title, posts.url, posts.description, posts.published_at
 FROM posts
 INNER JOIN feeds_users
-ON feed_id = feeds_users.feed_id
+ON posts.feed_id = feeds_users.feed_id
 WHERE feeds_users.user_id = $1
 LIMIT $2
 `

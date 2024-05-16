@@ -32,6 +32,13 @@ type FeedFollow struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type PostByUser struct {
+	Title       string    `json:"title"`
+	Url         string    `json:"url"`
+	Description string    `json:"description"`
+	PublishedAt time.Time `json:"published_at"`
+}
+
 func databaseUserToUser(user database.User) User {
 	return User{
 		ID:        user.ID,
@@ -60,5 +67,14 @@ func databaseFollowtoFollow(follow database.FeedsUser) FeedFollow {
 		UpdatedAt: follow.UpdatedAt,
 		FeedID:    follow.FeedID,
 		UserID:    follow.UserID,
+	}
+}
+
+func databasePostsByUserToPostByUser(post database.GetPostByUserRow) PostByUser {
+	return PostByUser{
+		Title:       post.Title,
+		Url:         post.Url,
+		Description: post.Description,
+		PublishedAt: post.PublishedAt,
 	}
 }

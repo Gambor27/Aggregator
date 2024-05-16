@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"log"
 	"strings"
 	"sync"
@@ -51,12 +50,6 @@ func scrapeFeed(db *database.Queries, wg *sync.WaitGroup, feed database.Feed) {
 			continue
 		}
 
-		var desc = sql.NullString{}
-
-		if item.Description != "" {
-			desc.String = item.Description
-			desc.Valid = true
-		}
 		var post = database.CreatePostParams{
 			ID:          uuid.New(),
 			CreatedAt:   time.Now(),
