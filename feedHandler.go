@@ -29,26 +29,57 @@ func (cfg apiConfig) createFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var newFeed = database.CreateFeedParams{}
-	uuid, err := uuid.NewUUID()
+	feedUUID, err := uuid.NewUUID()
 	if err != nil {
 		jsonError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	newFeed.ID = uuid
+	newFeed.ID = feedUUID
 	newFeed.CreatedAt = time.Now()
 	newFeed.UpdatedAt = time.Now()
 	newFeed.Name = request.Name
 	newFeed.Url = request.URL
 	newFeed.UserID = user.ID
 
-	feed, err := cfg.DB.CreateFeed(r.Context(), newFeed)
+	dbFeed, err := cfg.DB.CreateFeed(r.Context(), newFeed)
 	if err != nil {
 		jsonError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	respondWithJSON(w, http.StatusAccepted, databaseFeedToFeed(feed))
+	followuuid, err := uuid.NewUUID()
+	if err != nil {
+		jsonError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	feed := databaseFeedToFeed(dbFeed)
+
+	var newFollow = database.CreateFeedFollowParams{
+		ID:        followuuid,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		FeedID:    feed.ID,
+		UserID:    user.ID,
+	}
+
+	dbFollow, err := cfg.DB.CreateFeedFollow(r.Context(), newFollow)
+	if err != nil {
+		jsonError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	follow := databaseFollowtoFollow(dbFollow)
+
+	var ResponseStruct = struct {
+		Feed   Feed
+		Follow FeedFollow
+	}{
+		Feed:   feed,
+		Follow: follow,
+	}
+	respondWithJSON(w, http.StatusAccepted, ResponseStruct)
 }
 
 func (cfg apiConfig) getFeeds(w http.ResponseWriter, r *http.Request) {
