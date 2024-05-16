@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/Gambor27/RSSFeed/internal/database"
 )
@@ -16,13 +17,16 @@ type apiConfig struct {
 
 func serverSetup(port string) error {
 	dbURL := os.Getenv(("CONNECTION_STRING"))
-	db, err := sql.Open("postgres", dbURL)
+	conn, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	var cfg = apiConfig{}
-	cfg.DB = database.New(db)
+	db := database.New(conn)
+	var cfg = apiConfig{
+		DB: db,
+	}
 
+	go startScraping(db, 10, time.Minute)
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /v1/readiness", health)
